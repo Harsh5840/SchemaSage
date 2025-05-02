@@ -1,15 +1,168 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String     @id @default(uuid())
+  name       String?
+  email      String     @unique
+  avatarUrl  String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  workspaces Workspace[] @relation("UserWorkspaces")
+  memberships WorkspaceMember[]
+  projects   Project[]  @relation("UserProjects")
+  aiInteractions AIInteraction[]
+  comments   Comment[]
+  sessions   CollabSession[]
+}
+
+model Workspace {
+  id        String           @id @default(uuid())
+  name      String
+  owner     User             @relation("UserWorkspaces", fields: [ownerId], references: [id])
+  ownerId   String
+  members   WorkspaceMember[]
+  projects  Project[]
+  createdAt DateTime         @default(now())
+}
+
+model WorkspaceMember {
+  id            String     @id @default(uuid())
+  workspace     Workspace  @relation(fields: [workspaceId], references: [id])
+  workspaceId   String
+  user          User       @relation(fields: [userId], references: [id])
+  userId        String
+  role          Role
+  invitedEmail  String?
+}
+
+enum Role {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+model Project {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id])
+  workspaceId String
+  createdBy   User       @relation("UserProjects", fields: [createdById], references: [id])
+  createdById String
+  createdAt   DateTime   @default(now())
+  schemas     Schema[]
+}
+
+model Schema {
+  id          String       @id @default(uuid())
+  name        String
+  project     Project      @relation(fields: [projectId], references: [id])
+  projectId   String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tables      Table[]
+  versions    SchemaVersion[]
+  aiInteractions AIInteraction[]
+  sessions    CollabSession[]
+}
+
+model Table {
+  id        String     @id @default(uuid())
+  name      String
+  schema    Schema     @relation(fields: [schemaId], references: [id])
+  schemaId  String
+  positionX Float
+  positionY Float
+  createdAt DateTime   @default(now())
+  columns   Column[]
+  comments  Comment[]
+  outgoingRelations Relationship[] @relation("FromTable")
+  incomingRelations Relationship[] @relation("ToTable")
+}
+
+model Column {
+  id           String   @id @default(uuid())
+  name         String
+  type         String
+  isPrimary    Boolean
+  isNullable   Boolean
+  isUnique     Boolean
+  defaultValue String?
+  table        Table    @relation(fields: [tableId], references: [id])
+  tableId      String
+}
+
+model Relationship {
+  id           String   @id @default(uuid())
+  fromTable    Table    @relation("FromTable", fields: [fromTableId], references: [id])
+  fromTableId  String
+  toTable      Table    @relation("ToTable", fields: [toTableId], references: [id])
+  toTableId    String
+  fromColumn   String
+  toColumn     String
+  type         RelationshipType
+}
+
+enum RelationshipType {
+  ONE_TO_ONE
+  ONE_TO_MANY
+  MANY_TO_ONE
+  MANY_TO_MANY
+}
+
+model AIInteraction {
+  id        String   @id @default(uuid())
+  schema    Schema   @relation(fields: [schemaId], references: [id])
+  schemaId  String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  prompt    String
+  response  Json
+  createdAt DateTime @default(now())
+}
+
+model SchemaVersion {
+  id          String   @id @default(uuid())
+  schema      Schema   @relation(fields: [schemaId], references: [id])
+  schemaId    String
+  snapshotJson Json
+  createdAt   DateTime @default(now())
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  table     Table    @relation(fields: [tableId], references: [id])
+  tableId   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+model CollabSession {
+  id        String   @id @default(uuid())
+  schema    Schema   @relation(fields: [schemaId], references: [id])
+  schemaId  String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  joinedAt  DateTime @default(now())
+  lastActive DateTime
+  cursors   CursorPosition[]
+}
+
+model CursorPosition {
+  id         String         @id @default(uuid())
+  session    CollabSession  @relation(fields: [sessionId], references: [id])
+  sessionId  String
+  x          Float
+  y          Float
+  color      String
+  updatedAt  DateTime       @default(now())
 }
