@@ -4,7 +4,7 @@ const mainrouter = express.Router();
 
 import authRouter from './auth.js';
 
-mainrouter.post('/auth', authRouter);
+mainrouter.use('/auth', authRouter);
 
 
 export default mainrouter;

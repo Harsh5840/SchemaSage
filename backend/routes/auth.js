@@ -17,6 +17,7 @@ const authSchema = z.object({
 authRouter.post('/register', async (req, res) => {
   try {
     const { email, password } = authSchema.parse(req.body);
+    console.log(req.body);
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -68,48 +69,45 @@ authRouter.post('/login', async (req, res) => {
 });
 
 // OAuth (Google and GitHub) callback route
-authRouter.post('/oauth', async (req, res) => {
+authRouter.post("/oauth", async (req, res) => {
+  const { email, name, provider } = req.body;
+
+  if (!email || !provider) {
+    return res.status(400).json({ message: "Missing required user data" });
+  }
+
   try {
-    const { provider, oauthData } = req.body; // { provider: 'google', oauthData: { id, email, name, avatarUrl } }
-
-    if (!oauthData || !oauthData.email) {
-      return res.status(400).json({ message: "Invalid OAuth data" });
-    }
-
-    // Check if the user already exists via OAuth
-    const existingUser = await prisma.user.findUnique({
-      where: { email: oauthData.email },
+    // Check if the user already exists
+    let user = await prisma.user.findUnique({
+      where: { email },
     });
 
-    let user;
-
-    if (existingUser) {
-      // User already exists, just update the avatar if provided
+    if (user) {
+      // Update user data if exists
       user = await prisma.user.update({
-        where: { email: oauthData.email },
+        where: { email },
         data: {
-          avatarUrl: oauthData.avatarUrl,
-          name: oauthData.name || existingUser.name,
+          name,
+          provider, // Update provider if needed
         },
       });
     } else {
-      // Create a new user via OAuth data
+      // Create a new user without password (for OAuth users)
       user = await prisma.user.create({
         data: {
-          email: oauthData.email,
-          name: oauthData.name,
-          avatarUrl: oauthData.avatarUrl,
+          email,
+          name,
+          provider,
         },
       });
     }
 
-    // Optionally generate a token for the OAuth user
-    const token = generateToken(user.id); // Add your token generation logic here
-
-    res.status(200).json({ message: "OAuth login successful", user, token });
+    res.status(200).json({ message: "User data stored successfully", user });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("Error saving user data:", error);
+    res.status(500).json({ message: "Failed to store user data" });
   }
 });
+
 
 export default authRouter;
