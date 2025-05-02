@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { Router } from "express";
 import { z } from "zod";
-import { generateToken } from './utils'; // Placeholder for JWT token generation
+import { generateToken } from "../utils/jwtUtils.js"; // Placeholder for JWT token generation
 
 const prisma = new PrismaClient();
 const authRouter = Router();
@@ -112,4 +112,4 @@ authRouter.post('/oauth', async (req, res) => {
   }
 });
 
-module.exports = authRouter;
+export default authRouter;

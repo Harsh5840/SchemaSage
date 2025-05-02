@@ -1,7 +1,10 @@
-const authrouter = require('./auth');
+import express from 'express';
 
-const mainrouter = require('express').Router();
-//route to all the important pages
+const mainrouter = express.Router();
 
-mainrouter.post('/auth', authrouter);
-module.exports = mainrouter;
+import authRouter from './auth.js';
+
+mainrouter.post('/auth', authRouter);
+
+
+export default mainrouter;

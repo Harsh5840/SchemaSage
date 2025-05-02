@@ -1,9 +1,10 @@
 
-const express = require('express');
+import express from 'express';
+import mainrouter from './routes/main.js';
 const app = express();
 const port = process.env.PORT || 5000;
-const cors = require('cors');
-const mainrouter = require('./routes/main');
+import cors from 'cors';
+
 
 
 
@@ -11,7 +12,7 @@ const mainrouter = require('./routes/main');
 
 app.use(cors());
 app.use(express.json());
-app.use("/api",mainrouter);
+app.use("/api", mainrouter);
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
