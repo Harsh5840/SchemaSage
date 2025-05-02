@@ -62,7 +62,7 @@ authRouter.post('/login', async (req, res) => {
     // Optionally generate a token here if needed (JWT)
     const token = generateToken(user.id); // Add your token generation logic here
 
-    res.status(200).json({ message: "Login successful", user, token });
+    res.status(200).json({ message: "Login successful", user, token });   
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
