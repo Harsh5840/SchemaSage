@@ -11,16 +11,18 @@ model User {
   id         String     @id @default(uuid())
   name       String?
   email      String     @unique
+  password   String
   avatarUrl  String?
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
-  workspaces Workspace[] @relation("UserWorkspaces")    //workspaces that the user is an owner of
-  memberships WorkspaceMember[]     //workspaces that the user is a member of
+  workspaces Workspace[] @relation("UserWorkspaces")    // Workspaces that the user is an owner of
+  memberships WorkspaceMember[]     // Workspaces that the user is a member of
   projects   Project[]  @relation("UserProjects")
-  aiInteractions AIInteraction[]
+  aiInteractions AIInteraction[]  // AI-related user interactions
   comments   Comment[]
-  sessions   CollabSession[]
+  sessions   CollabSession[]      // Collaboration sessions
 }
+
 
 model Workspace {
   id        String           @id @default(uuid())
