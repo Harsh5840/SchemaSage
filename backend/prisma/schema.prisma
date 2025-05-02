@@ -14,8 +14,8 @@ model User {
   avatarUrl  String?
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
-  workspaces Workspace[] @relation("UserWorkspaces")
-  memberships WorkspaceMember[]
+  workspaces Workspace[] @relation("UserWorkspaces")    //workspaces that the user is an owner of
+  memberships WorkspaceMember[]     //workspaces that the user is a member of
   projects   Project[]  @relation("UserProjects")
   aiInteractions AIInteraction[]
   comments   Comment[]
@@ -67,7 +67,7 @@ model Schema {
   projectId   String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  tables      Table[]
+  tables      Table[]  
   versions    SchemaVersion[]
   aiInteractions AIInteraction[]
   sessions    CollabSession[]
