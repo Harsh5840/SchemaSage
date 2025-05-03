@@ -1,11 +1,11 @@
 // routes/workspaces.ts
 import { Router } from 'express';
 import { prisma } from '../lib/prisma';
-import { authenticateUser } from '../middleware/auth';
+import { verifyToken } from '../middleware/authMiddleware';
 
-const router = Router();
+const workspaceRouter = Router();
 
-router.get('/workspaces', authenticateUser, async (req, res) => {
+workspaceRouter.get('/workspaces', verifyToken, async (req, res) => {
   try {
     const userId = req.userId;
 
@@ -41,4 +41,4 @@ router.get('/workspaces', authenticateUser, async (req, res) => {
   }
 });
 
-export default router;
+export default workspaceRouter;
