@@ -1,39 +1,22 @@
-// routes/schemas.ts
-import { Router } from 'express';
-import { prisma } from '../lib/prisma';
-import { authenticateUser } from '../middleware/auth';
+import express from 'express';
+import schemaController from '../controllers/schemaController.js'; // Corrected import path
+import { verifyToken } from '../middleware/verifyToken.js'; // Corrected import path
 
-const schemaRouter = Router();
+const schemaRouter = express.Router();
 
-schemaRouter.get('/schemas/:projectId', authenticateUser, async (req, res) => {
-  try {
-    const userId = req.userId;
-    const projectId = req.params.projectId;
+// Create a new schema within a project
+schemaRouter.post('/create', verifyToken, schemaController.createSchema);
 
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-      select: {
-        id: true,
-        name: true,
-        schemas: {
-          select: {
-            id: true,
-            name: true,
-            updatedAt: true
-          }
-        }
-      }
-    });
+// Get all schemas for a project
+schemaRouter.get('/:projectId', verifyToken, schemaController.getSchemasByProject);
 
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
+// Get a specific schema
+schemaRouter.get('/:schemaId', verifyToken, schemaController.getSchema);
 
-    res.json({ schemas: project.schemas });
-  } catch (err) {
-    console.error('Schema error:', err);
-    res.status(500).json({ error: 'Failed to load schemas' });
-  }
-});
+// Update a schema (name)
+schemaRouter.put('/:schemaId', verifyToken, schemaController.updateSchema);
+
+// Delete a schema
+schemaRouter.delete('/:schemaId', verifyToken, schemaController.deleteSchema);
 
 export default schemaRouter;

@@ -1,51 +1,20 @@
-// routes/projects.ts
-import { Router } from 'express';
-import { prisma } from '../lib/prisma';
-import { verifyToken } from '../middleware/authMiddleware';
+// backend/routes/projects.js
+import express from 'express';
+import projectController from '../controllers/projectController';
+import { verifyToken } from '../middleware/verifyToken';
 
-const projectRouter = Router();
+const projectRouter = express.Router();
 
-projectRouter.get('/projects/:workspaceId', verifyToken, async (req, res) => {
-  try {
-    const userId = req.userId;
-    const workspaceId = req.params.workspaceId;
+// Create a new project
+projectRouter.post('/create', verifyToken, projectController.createProject);
 
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
-      select: {
-        id: true,
-        name: true,
-        projects: {
-          select: {
-            id: true,
-            name: true,
-            schemas: {
-              select: {
-                id: true,
-                name: true
-              }
-            }
-          }
-        }
-      }
-    });
+// Get all projects for a specific workspace
+projectRouter.get('/', verifyToken, projectController.getProjects);
 
-    if (!workspace) {
-      return res.status(404).json({ error: 'Workspace not found' });
-    }
+// Update a project by ID
+projectRouter.put('/:id', verifyToken, projectController.updateProject);
 
-    // Ensure user is a member of the workspace
-    const isMember = workspace.members.some(member => member.userId === userId);
-
-    if (!isMember && workspace.ownerId !== userId) {
-      return res.status(403).json({ error: 'Unauthorized' });
-    }
-
-    res.json({ workspace });
-  } catch (err) {
-    console.error('Project error:', err);
-    res.status(500).json({ error: 'Failed to load projects' });
-  }
-});
+// Delete a project by ID
+projectRouter.delete('/:id', verifyToken, projectController.deleteProject);
 
 export default projectRouter;

@@ -1,6 +1,6 @@
 // backend/controllers/projectController.js
 import { prisma } from '../prisma';
-import { verifyToken } from '../middleware/verifyToken';
+import { verifyToken } from '../middleware/authMiddleware';
 
 const createProject = async (req, res) => {
   const { name, description, workspaceId } = req.body;
@@ -64,7 +64,7 @@ const getProjects = async (req, res) => {
   }
 };
 
-// Update project details
+
 const updateProject = async (req, res) => {
   const { id } = req.params;
   const { name, description } = req.body;
